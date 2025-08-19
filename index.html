@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Work Hours Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      width: 380px;
+    }
+    h2 { margin-top: 0; }
+    label { display: block; margin: 10px 0 4px; font-weight: 600; }
+    input[type="time"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .break-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .break-group input {
+      flex: 1;
+    }
+    .btn {
+      margin-top: 10px;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: #1d4ed8; }
+    .btn-small {
+      background: #6b7280;
+      font-size: 13px;
+      padding: 6px;
+      margin-top: 6px;
+    }
+    .btn-small:hover { background: #4b5563; }
+    .result {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .ok { background: #dcfce7; color: #15803d; }
+    .bad { background: #fee2e2; color: #b91c1c; }
+    small { color: #555; display: block; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Work Hours Calculator</h2>
+    
+    <label for="start">Start Time</label>
+    <input type="time" id="start" required>
+
+    <div id="breaks">
+      <label>Breaks</label>
+      <div class="break-group">
+        <input type="time" class="breakStart" placeholder="Break Start">
+        <input type="time" class="breakEnd" placeholder="Break End">
+      </div>
+    </div>
+    <button class="btn-small" onclick="addBreak()">+ Add Another Break</button>
+
+    <button class="btn" onclick="calculate()">Calculate</button>
+    
+    <div id="output" class="result">Total: --:--</div>
+    <small>End time is auto-set to <strong>current time</strong>.</small>
+  </div>
+
+  <script>
+    function timeToMinutes(time) {
+      if (!time) return null;
+      const [h, m] = time.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function minutesToHHMM(mins) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+
+    function addBreak() {
+      const breaksDiv = document.getElementById("breaks");
+      const div = document.createElement("div");
+      div.className = "break-group";
+      div.innerHTML = `
+        <input type="time" class="breakStart" placeholder="Break Start">
+        <input type="time" class="breakEnd" placeholder="Break End">
+      `;
+      breaksDiv.appendChild(div);
+    }
+
+    function calculate() {
+      const startVal = document.getElementById("start").value;
+      const output = document.getElementById("output");
+
+      if (!startVal) {
+        output.textContent = "Please enter Start Time.";
+        output.className = "result bad";
+        return;
+      }
+
+      const startMin = timeToMinutes(startVal);
+
+      // Current time in minutes
+      const now = new Date();
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+
+      let endMin = nowMin;
+      if (endMin < startMin) endMin += 24 * 60; // overnight shift
+
+      let gross = endMin - startMin;
+
+      // Calculate multiple break durations
+      let breakDur = 0;
+      const breakStarts = document.querySelectorAll(".breakStart");
+      const breakEnds = document.querySelectorAll(".breakEnd");
+
+      for (let i = 0; i < breakStarts.length; i++) {
+        const bStart = timeToMinutes(breakStarts[i].value);
+        const bEnd = timeToMinutes(breakEnds[i].value);
+        if (bStart !== null && bEnd !== null) {
+          let startB = bStart;
+          let endB = bEnd;
+          if (endB < startB) endB += 24 * 60; // overnight break
+          breakDur += endB - startB;
+        }
+      }
+
+      const net = gross - breakDur;
+      const result = minutesToHHMM(net);
+
+      output.textContent = `Total Working Time: ${result}`;
+      output.className = "result " + (net >= 8 * 60 ? "ok" : "bad");
+    }
+  </script>
+</body>
+</html>
