@@ -5,27 +5,40 @@
   <title>Work Hours Calculator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f7f9fc;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #dbeafe, #f0f9ff);
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
       margin: 0;
+      padding: 20px;
     }
     .card {
       background: #fff;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      width: 380px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      width: 420px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.7s ease-in-out;
     }
-    h2 { margin-top: 0; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .card img.banner {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+    h2 { margin: 0 0 12px; text-align: center; color: #1e3a8a; }
     label { display: block; margin: 10px 0 4px; font-weight: 600; }
     input[type="time"] {
       width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
       border-radius: 8px;
       font-size: 14px;
     }
@@ -33,16 +46,27 @@
       display: flex;
       gap: 6px;
       margin-bottom: 8px;
+      align-items: center;
     }
     .break-group input {
       flex: 1;
     }
+    .delete-btn {
+      background: #ef4444;
+      border: none;
+      color: white;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .delete-btn:hover { background: #b91c1c; }
     .btn {
       margin-top: 10px;
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       background: #2563eb;
       color: white;
       font-size: 15px;
@@ -53,24 +77,31 @@
     .btn-small {
       background: #6b7280;
       font-size: 13px;
-      padding: 6px;
+      padding: 8px;
       margin-top: 6px;
     }
     .btn-small:hover { background: #4b5563; }
     .result {
       margin-top: 16px;
-      padding: 12px;
+      padding: 14px;
       border-radius: 8px;
       font-weight: bold;
       text-align: center;
+      font-size: 16px;
     }
     .ok { background: #dcfce7; color: #15803d; }
     .bad { background: #fee2e2; color: #b91c1c; }
-    small { color: #555; display: block; margin-top: 6px; }
+    small { color: #555; display: block; margin-top: 6px; text-align: center;}
+    .gif {
+      display: block;
+      margin: 10px auto 0;
+      max-width: 100px;
+    }
   </style>
 </head>
 <body>
   <div class="card">
+    <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExdmJmenFucng4M3dwdnlnc21kNGRrYW9vYzFhZ2tueHFqczByMDl0bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0MYGtCMbPTYWOzaU/giphy.gif" class="banner" alt="Work Banner">
     <h2>Work Hours Calculator</h2>
     
     <label for="start">Start Time</label>
@@ -81,6 +112,7 @@
       <div class="break-group">
         <input type="time" class="breakStart" placeholder="Break Start">
         <input type="time" class="breakEnd" placeholder="Break End">
+        <button class="delete-btn" onclick="removeBreak(this)">✖</button>
       </div>
     </div>
     <button class="btn-small" onclick="addBreak()">+ Add Another Break</button>
@@ -89,6 +121,9 @@
     
     <div id="output" class="result">Total: --:--</div>
     <small>End time is auto-set to <strong>current time</strong>.</small>
+    <!-- <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ21mM2xrZXU2M3R1dGdoNjR1NHVmamNkeGttZHk1MHY2d3kweG1uMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1qZ7Ny4dYqhxwftGvG/giphy.gif" 
+    class="gif"
+     alt="Working Gif"> -->
   </div>
 
   <script>
@@ -111,8 +146,13 @@
       div.innerHTML = `
         <input type="time" class="breakStart" placeholder="Break Start">
         <input type="time" class="breakEnd" placeholder="Break End">
+        <button class="delete-btn" onclick="removeBreak(this)">✖</button>
       `;
       breaksDiv.appendChild(div);
+    }
+
+    function removeBreak(btn) {
+      btn.parentElement.remove();
     }
 
     function calculate() {
