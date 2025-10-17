@@ -34,9 +34,16 @@
     }
 
     h2 {
-      margin-bottom: 20px;
+      margin-bottom: 5px;
       font-size: 1.6rem;
       font-weight: 600;
+    }
+
+    #leaveTime {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: #ffeb3b;
+      font-weight: bold;
     }
 
     label {
@@ -129,6 +136,12 @@
       border-radius: 12px;
     }
 
+    #remaining {
+      margin-top: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
     .green { background: rgba(0, 255, 0, 0.3); color: #00ff88; }
     .red { background: rgba(255, 0, 0, 0.3); color: #ff6b6b; }
 
@@ -142,6 +155,7 @@
   <div class="container">
     <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdzdic3F5YnBpdWZudThwdzFlNXFiYnpiZ3YxamRpMnY3Ym9zZ3l0aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ICOgUNjpvO0PC/giphy.gif" alt="Work">
     <h2>Work Hours Calculator</h2>
+    <div id="leaveTime">🕒 Leave Time: --</div>
 
     <label>Start Time</label>
     <input type="time" id="startTime">
@@ -152,6 +166,7 @@
     <button class="btn calc-btn" onclick="calculateHours()">⚡ Calculate</button>
 
     <div id="result">Total: --</div>
+    <div id="remaining"></div>
   </div>
 
   <script>
@@ -169,6 +184,11 @@
 
     function calculateHours() {
       const startTime = document.getElementById("startTime").value;
+      const remaining = document.getElementById("remaining");
+      const leaveTimeDisplay = document.getElementById("leaveTime");
+      remaining.textContent = "";
+      leaveTimeDisplay.innerHTML = "<b>🕒 Leave Time: --</b>";
+
       if (!startTime) {
         alert("Please enter start time");
         return;
@@ -178,9 +198,7 @@
       let [sh, sm] = startTime.split(":").map(Number);
       start.setHours(sh, sm, 0, 0);
 
-      let now = new Date();
-      let totalMs = now - start;
-
+      let totalBreakMs = 0;
       document.querySelectorAll(".break-row").forEach(row => {
         let bStart = row.querySelector(".breakStart").value;
         let bEnd = row.querySelector(".breakEnd").value;
@@ -191,9 +209,13 @@
           let [eh, em] = bEnd.split(":").map(Number);
           bs.setHours(bh, bm, 0, 0);
           be.setHours(eh, em, 0, 0);
-          totalMs -= (be - bs);
+          totalBreakMs += (be - bs);
         }
       });
+
+      // Calculate total worked time
+      let now = new Date();
+      let totalMs = now - start - totalBreakMs;
 
       let hours = Math.floor(totalMs / (1000 * 60 * 60));
       let minutes = Math.floor((totalMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -201,10 +223,20 @@
       let result = document.getElementById("result");
       result.textContent = `Total: ${hours}h ${minutes}m`;
 
+      // Compute leave time (8 hours after start + breaks)
+      const leaveTime = new Date(start.getTime() + totalBreakMs + 8 * 60 * 60 * 1000);
+      const formattedLeave = leaveTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+      leaveTimeDisplay.innerHTML = `<b>🕒 You can leave at: ${formattedLeave}</b>`;
+
       if (hours >= 8) {
         result.className = "green";
+        remaining.innerHTML = `<b>✅ Completed 8 hours!</b>`;
       } else {
         result.className = "red";
+        const remainingMs = (8 * 60 * 60 * 1000) - totalMs;
+        const remH = Math.floor(remainingMs / (1000 * 60 * 60));
+        const remM = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+        remaining.innerHTML = `<b>⏳ Remaining: ${remH}h ${remM}m to complete 8 hours</b>`;
       }
     }
   </script>
