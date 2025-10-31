@@ -29,8 +29,12 @@
     }
 
     .container img {
-      width: 100px;
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 12px;
       margin-bottom: 15px;
+      transition: all 0.5s ease;
     }
 
     h2 {
@@ -153,7 +157,7 @@
 </head>
 <body>
   <div class="container">
-    <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdzdic3F5YnBpdWZudThwdzFlNXFiYnpiZ3YxamRpMnY3Ym9zZ3l0aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/ICOgUNjpvO0PC/giphy.gif" alt="Work">
+    <img id="statusGif" src="https://i.pinimg.com/originals/09/b6/58/09b6589706fa948bd5b0b840d8b9638a.gif" alt="Work">
     <h2>Work Hours Calculator</h2>
     <div id="leaveTime">🕒 Leave Time: --</div>
 
@@ -170,6 +174,13 @@
   </div>
 
   <script>
+    const gifs = {
+      working: "https://i.pinimg.com/originals/09/b6/58/09b6589706fa948bd5b0b840d8b9638a.gif",
+      waiting: "https://i.pinimg.com/originals/c1/b9/9b/c1b99b3c5f34886e18256642cfb6b25e.gif",
+      gohome: "https://i.pinimg.com/originals/5f/96/1a/5f961a631377a0c5407eec9922c44802.gif",
+      leaveoffice: "https://c.tenor.com/GZP7uDWLxfUAAAAd/tenor.gif"
+    };
+
     function addBreak() {
       let div = document.createElement("div");
       div.className = "break-row";
@@ -186,6 +197,8 @@
       const startTime = document.getElementById("startTime").value;
       const remaining = document.getElementById("remaining");
       const leaveTimeDisplay = document.getElementById("leaveTime");
+      const gif = document.getElementById("statusGif");
+
       remaining.textContent = "";
       leaveTimeDisplay.innerHTML = "<b>🕒 Leave Time: --</b>";
 
@@ -228,14 +241,28 @@
       const formattedLeave = leaveTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
       leaveTimeDisplay.innerHTML = `<b>🕒 You can leave at: ${formattedLeave}</b>`;
 
-      if (hours >= 8) {
+      const remainingMs = (8 * 60 * 60 * 1000) - totalMs;
+      const remH = Math.floor(remainingMs / (1000 * 60 * 60));
+      const remM = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+
+      if (hours >= 8.5) {
+        gif.src = gifs.leaveoffice;
         result.className = "green";
-        remaining.innerHTML = `<b>✅ Completed 8 hours!</b>`;
-      } else {
+        remaining.innerHTML = `<b>🏠 Time to leave office!</b>`;
+      } 
+      else if (hours >= 8) {
+        gif.src = gifs.gohome;
+        result.className = "green";
+        remaining.innerHTML = `<b>✅ Completed 8 hours! Time to go home soon.</b>`;
+      } 
+      else if (remH < 1) {
+        gif.src = gifs.waiting;
         result.className = "red";
-        const remainingMs = (8 * 60 * 60 * 1000) - totalMs;
-        const remH = Math.floor(remainingMs / (1000 * 60 * 60));
-        const remM = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+        remaining.innerHTML = `<b>⌛ Almost done! ${remH}h ${remM}m left.</b>`;
+      } 
+      else {
+        gif.src = gifs.working;
+        result.className = "red";
         remaining.innerHTML = `<b>⏳ Remaining: ${remH}h ${remM}m to complete 8 hours</b>`;
       }
     }
